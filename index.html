@@ -85,7 +85,7 @@
             padding: 30px;
             border-radius: 16px;
             max-width: 800px;
-            margin: 0 auto;
+            margin: 0 auto 20px auto;
             box-shadow: 0 4px 20px rgba(0,0,0,0.08);
         }
 
@@ -131,6 +131,14 @@
 
     <!-- 内容区 -->
     <div class="content">
+
+        <!-- 服务器状态卡片 -->
+        <div class="card" id="serverStatusCard">
+            <h2>服务器状态</h2>
+            <p id="serverStatus">正在获取服务器状态...</p>
+        </div>
+
+        <!-- 主内容 -->
         <div class="card">
             <h1>欢迎来到喵宿咖啡厅</h1>
             <p>我们真心希望，想要来一次永不落幕的MC</p>
@@ -142,6 +150,7 @@
 
     <!-- JS -->
     <script src="js/login.js"></script>
+
     <script>
         updateNav();
 
@@ -151,9 +160,46 @@
                 alert("已复制 QQ 审核群号：" + qq);
             });
         }
+
+        /* -------------------------
+           服务器状态查询模块
+        -------------------------- */
+        async function loadServerStatus() {
+            const ip = "frp-tag.com:42315";  // ← 替换成你的服务器 IP 或域名
+            const api = `https://api.mcsrvstat.us/2/${ip}`;
+
+            try {
+                const res = await fetch(api);
+                const data = await res.json();
+
+                if (!data.online) {
+                    document.getElementById("serverStatus").innerHTML =
+                        `<span style="color:red;">服务器离线</span>`;
+                    return;
+                }
+
+                const players = data.players?.online ?? 0;
+                const max = data.players?.max ?? 0;
+                const tps = data.debug?.tps ?? "未知";
+
+                document.getElementById("serverStatus").innerHTML = `
+                    <b>服务器状态：</b> <span style="color:green;">在线</span><br>
+                    <b>在线人数：</b> ${players} / ${max}<br>
+                    <b>TPS：</b> ${tps}
+                `;
+            } catch (e) {
+                document.getElementById("serverStatus").innerHTML =
+                    `<span style="color:red;">无法获取服务器状态</span>`;
+            }
+        }
+
+        loadServerStatus();
+        setInterval(loadServerStatus, 30000);
     </script>
 
 </body>
 </html>
+
+
 
 
